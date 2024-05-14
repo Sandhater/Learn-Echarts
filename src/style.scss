@@ -1,0 +1,47 @@
+*{
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);  /* Remove the blue mask when tapping on a mobile device*/
+}
+
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+
+  color-scheme: light dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  --white: #ffffff;
+  --light-grey: #dddddd;
+  --layer-color: #ffffff;
+  --background-color: #fafafa;
+  --text-color1: #222222;
+  --content-margin: max(6%, calc(50% - 960px))
+}
+
+body.dark-mode {
+  --background-color: #1a1a1a;
+  --text-color1: #eeeeee;
+}
+
+#app {
+  width: 100%;
+  height: fit-content;
+  overflow-x: hidden;
+
+  color: var(--text-color1);
+}
