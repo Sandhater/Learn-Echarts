@@ -4,22 +4,29 @@
       <h1>Pokémon Data</h1>
       <p>Based on the dataset
         <a target="_blank" href="https://www.kaggle.com/datasets/ingmateleal/pokemon-all-9-gen-information">Pokemon all 9 gen information</a>
-        on kaggle</p>
+        on kaggle.</p>
     </div>
     <div id="ChartArea">
       <div id="TypeChart" class="chartWrapper">
-        <h2>Pokemons' Type</h2>
+        <h2>Pokemons' Types</h2>
         <v-chart class="chart" :option="typeChartOption" autoresize />
       </div>
       <div id="ColorChart" class="chartWrapper">
-        <h2>Pokemon's Color</h2>
+        <h2>Pokemon's Colors</h2>
         <v-chart class="chart" :option="colorChartOption" autoresize />
       </div>
       <div id="StatBoxChart" class="chartWrapper">
-        <h2>Pokemon's Stat</h2>
+        <h2>Pokemon's Stats</h2>
         <v-chart class="chart" :option="statBoxOption" autoresize />
       </div>
-      <div id="Chart3" class="chartWrapper"></div>
+      <div id="ViriantChart" class="chartWrapper">
+        <h2>Pokemon's Regional Viriants</h2>
+        <v-chart class="chart" :option="viriantChartOption" autoresize />
+      </div>
+      <div id="AbilityChart" class="chartWrapper">
+        <h2>Pokemon's Abilities</h2>
+        <v-chart class="chart" :option="abilityChartOption" autoresize />
+      </div>
     </div>
   </div>
 </template>
@@ -29,7 +36,7 @@
 import { ref, reactive, provide } from 'vue'
 import { use } from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
-import { PieChart, BarChart, ScatterChart, HeatmapChart, BoxplotChart } from 'echarts/charts';
+import { PieChart, BarChart, ScatterChart, HeatmapChart, BoxplotChart, SankeyChart, TreemapChart } from 'echarts/charts';
 import {
   GridComponent,
   MarkLineComponent,
@@ -54,6 +61,8 @@ use([
   ScatterChart,
   HeatmapChart,
   BoxplotChart,
+  SankeyChart,
+  TreemapChart,
   GridComponent,
   MarkLineComponent,
   TitleComponent,
@@ -121,29 +130,29 @@ const standardColorSeries = ['#429837', '#e7623d', '#2e9be3', '#f4cc1b', '#43c7c
 
 // Chart 1: the bar chart about pokemons' types.
 interface TypeCounter {
-  type: [number, number, number]
+  [type: string]: [number, number, number]
 }
 let typeCounter: TypeCounter = {} as TypeCounter
 data.forEach(pokemon => {
   if (pokemon.Type1 != '' && !(pokemon.Type1 in typeCounter))
-    typeCounter[pokemon.Type1 as keyof TypeCounter] = [0, 0, 0]
+    typeCounter[pokemon.Type1] = [0, 0, 0]
     if (pokemon.Type2 != '' && !(pokemon.Type2 in typeCounter))
-    typeCounter[pokemon.Type2 as keyof TypeCounter] = [0, 0, 0]
+    typeCounter[pokemon.Type2] = [0, 0, 0]
 
   if (pokemon.Type2 === '')
-    typeCounter[pokemon.Type1 as keyof TypeCounter][0]++    // The count of pokemons who have this type purely
+    typeCounter[pokemon.Type1][0]++    // The count of pokemons who have this type purely
   else {
-    typeCounter[pokemon.Type1 as keyof TypeCounter][1]++    // The count of pokemons who have this type as the primary type
-    typeCounter[pokemon.Type2 as keyof TypeCounter][2]++    // The count of pokemons who have this type as the secondary type
+    typeCounter[pokemon.Type1][1]++    // The count of pokemons who have this type as the primary type
+    typeCounter[pokemon.Type2][2]++    // The count of pokemons who have this type as the secondary type
   }
 })
 let typeNames: string[] = []
 let flattenedTypeCounter: [number[], number[], number[]] = [[], [], []]
 for (const typeName in typeCounter) {
   typeNames.push(typeName)
-  flattenedTypeCounter[0].push(typeCounter[typeName as keyof TypeCounter][0])   // Pure type pokemons' counts
-  flattenedTypeCounter[1].push(typeCounter[typeName as keyof TypeCounter][1])   // Primary type pokemons' counts
-  flattenedTypeCounter[2].push(typeCounter[typeName as keyof TypeCounter][2])   // Secondary type pokemons' counts
+  flattenedTypeCounter[0].push(typeCounter[typeName][0])   // Pure type pokemons' counts
+  flattenedTypeCounter[1].push(typeCounter[typeName][1])   // Primary type pokemons' counts
+  flattenedTypeCounter[2].push(typeCounter[typeName][2])   // Secondary type pokemons' counts
 }
 
 const typeChartOption = ref({
@@ -170,7 +179,13 @@ const typeChartOption = ref({
   ],
   yAxis: [
     {
-      type: 'value'
+      type: 'value',
+      name: 'Count',
+      nameTextStyle: {
+        fontSize: 16,
+        fontWeight: 600,
+        color: 'black'
+      }
     }
   ],
   series: [
@@ -207,28 +222,28 @@ const typeChartOption = ref({
 
 // Chart 2: the heatmap chart of pokemons' type and colors
 interface ColorCounterItem {
-  color: number
+  [color: string]: number
 }
 interface ColorCounterByType {
-  type: {color: number}
+  [type: string]: ColorCounterItem
 }
 let colorCounterByType = {} as ColorCounterByType
 let colorCategorySet: Set<string> = new Set<string>()
 data.forEach(pokemon => {
   if (pokemon.Type1 != '') {
     if (!(pokemon.Type1 in colorCounterByType))
-      colorCounterByType[pokemon.Type1 as keyof ColorCounterByType] = {} as ColorCounterItem
-    if (!(pokemon.Color in colorCounterByType[pokemon.Type1 as keyof ColorCounterByType]))
-      colorCounterByType[pokemon.Type1 as keyof ColorCounterByType][pokemon.Color as keyof ColorCounterItem] = 0
-    colorCounterByType[pokemon.Type1 as keyof ColorCounterByType][pokemon.Color as keyof ColorCounterItem]++
+      colorCounterByType[pokemon.Type1] = {} as ColorCounterItem
+    if (!(pokemon.Color in colorCounterByType[pokemon.Type1]))
+      colorCounterByType[pokemon.Type1][pokemon.Color] = 0
+    colorCounterByType[pokemon.Type1][pokemon.Color]++
   }
 
   if (pokemon.Type2 != '') {
     if (!(pokemon.Type2 in colorCounterByType))
-      colorCounterByType[pokemon.Type2 as keyof ColorCounterByType] = {} as ColorCounterItem
-    if (!(pokemon.Color in colorCounterByType[pokemon.Type2 as keyof ColorCounterByType]))
-      colorCounterByType[pokemon.Type2 as keyof ColorCounterByType][pokemon.Color as keyof ColorCounterItem] = 0
-    colorCounterByType[pokemon.Type2 as keyof ColorCounterByType][pokemon.Color as keyof ColorCounterItem]++
+      colorCounterByType[pokemon.Type2] = {} as ColorCounterItem
+    if (!(pokemon.Color in colorCounterByType[pokemon.Type2]))
+      colorCounterByType[pokemon.Type2][pokemon.Color] = 0
+    colorCounterByType[pokemon.Type2][pokemon.Color]++
   }
 
   if (!(pokemon.Color in colorCategorySet))
@@ -242,10 +257,10 @@ for(let i = 0; i < typeNames.length; i++) {
   for (let j = 0; j < colorCategories.length; j++) {
     let typeName = typeNames[i]
     let colorCategory = colorCategories[j]
-    if ((typeName as keyof ColorCounterByType) in colorCounterByType) {
-      let counterItem = colorCounterByType[typeName as keyof ColorCounterByType]
-      if ((colorCategory as keyof ColorCounterItem) in counterItem) {
-        let count = counterItem[colorCategory as keyof ColorCounterItem]
+    if (typeName in colorCounterByType) {
+      let counterItem = colorCounterByType[typeName]
+      if (colorCategory in counterItem) {
+        let count = counterItem[colorCategory]
         colorChartSeries.push([i, j, count])
         if (count > colorCountMax)
           colorCountMax = count
@@ -339,62 +354,232 @@ for (let i = 0; i < statNames.length; i++) {
   statsAnalysis['Semi-Legendary'].push(boxplotAnalyze(statsByCategory['Semi-Legendary'][i]))
   statsAnalysis.Legendary.push(boxplotAnalyze(statsByCategory.Legendary[i]))
 }
-console.log(statsAnalysis)
 
 const statBoxOption = ref({
-      grid: {
-        left: '5%',
-        right: '8%',
-        height: '90%',
-        top: '5%'
-      },
-      tooltip: {
-        trigger: 'item',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      color: standardColorSeries.slice(1, 5),
-      legend: {
-        data: ['Ordinary', 'Mythical', 'Semi-Legendary', 'Legendary']
-      },
-      xAxis: {
-        type: 'category',
-        data: statNames,
-        splitArea: { show: true }
-      },
-      yAxis: {
-        type: 'value',
-        name: 'Stats',
-        min: 0,
-        max: 270,
-        interval: 30,
-        splitLine: { show: false }
-      },
-      series: [
-        {
-          name: 'Ordinary',
-          type: 'boxplot',
-          data: statsAnalysis.Ordinary
-        },
-        {
-          name: 'Mythical',
-          type: 'boxplot',
-          data: statsAnalysis.Mythical
-        },
-        {
-          name: 'Semi-Legendary',
-          type: 'boxplot',
-          data: statsAnalysis['Semi-Legendary']
-        },
-        {
-          name: 'Legendary',
-          type: 'boxplot',
-          data: statsAnalysis.Legendary
-        }
-      ]
-    })
+  grid: {
+    left: '5%',
+    right: '8%',
+    height: '90%',
+    top: '5%'
+  },
+  tooltip: {
+    trigger: 'item',
+    axisPointer: {
+      type: 'line'
+    }
+  },
+  color: standardColorSeries.slice(1, 5),
+  legend: {
+    data: ['Ordinary', 'Mythical', 'Semi-Legendary', 'Legendary']
+  },
+  xAxis: {
+    type: 'category',
+    data: statNames,
+    splitArea: { show: true }
+  },
+  yAxis: {
+    type: 'value',
+    name: 'Stats',
+    min: 0,
+    max: 270,
+    interval: 30,
+    splitLine: { show: false },
+    nameTextStyle: {
+      fontSize: 16,
+      fontWeight: 600,
+      color: 'black'
+    }
+  },
+  series: [
+    {
+      name: 'Ordinary',
+      type: 'boxplot',
+      data: statsAnalysis.Ordinary
+    },
+    {
+      name: 'Mythical',
+      type: 'boxplot',
+      data: statsAnalysis.Mythical
+    },
+    {
+      name: 'Semi-Legendary',
+      type: 'boxplot',
+      data: statsAnalysis['Semi-Legendary']
+    },
+    {
+      name: 'Legendary',
+      type: 'boxplot',
+      data: statsAnalysis.Legendary
+    }
+  ]
+})
 
+
+// Chart 4: the pie chart of pokemon's regional viriant
+// Construct the table of each pokemon and its regional forms, and then filter the table.
+interface ViriantItem {
+  originalForm: Pokemon,
+  regionalForm: Pokemon[]
+}
+let virants: ViriantItem[] = [{originalForm: data[0], regionalForm: []}]
+data.forEach(pokemon => {
+  if (pokemon.No === virants.slice(-1)[0].originalForm.No)
+  {
+    if (pokemon.Region_Form_Flag === 1)
+      virants.slice(-1)[0].regionalForm.push(pokemon)
+  }
+  else
+    virants.push({originalForm: pokemon, regionalForm: []})
+})
+virants = virants.filter(el => {
+  return el.regionalForm.length > 0
+})
+
+// Count distribution of regions and orignal generation
+interface ViriantCounter {
+  [region: string]: {[gen: number]: number},
+}
+let viriantCounter = {} as ViriantCounter
+let regionNames = [] as string[]
+let generations = new Set<number>()
+virants.forEach(el => {
+  el.regionalForm.forEach(v => {
+    let originalGen = el.originalForm.Gen
+    let region = v.Name.split(' ')[0]
+    if (!(region in viriantCounter)) {
+      viriantCounter[region] = {}
+      regionNames.push(region)
+    }
+    if (!(originalGen in viriantCounter[region])) {
+      viriantCounter[region][originalGen] = 0
+      generations.add(originalGen)
+    }
+    viriantCounter[region][originalGen]++
+  })
+})
+
+
+function buildViriantChartData() {
+  let data = [] as {}[]
+  let i = 0
+  regionNames.forEach(region => {
+    data.push({
+      name: region,
+      itemStyle: {color: standardColorSeries[i]}
+    })
+    i++
+    if (i > standardColorSeries.length - 1)
+      i = 0
+  })
+  generations.forEach(gen => {
+    data.push({
+      name: 'Gen ' + gen,
+      itemStyle: {color: standardColorSeries[i]}
+    })
+    i++
+    if (i > standardColorSeries.length - 1)
+      i = 0
+  })
+  return data
+}
+
+function buildViriantChartLinks() {
+  let links = [] as {source: string, target: string, value: number}[]
+  regionNames.forEach(region => {
+    const counter = viriantCounter[region]
+    for (const gen in counter) {
+      links.push({
+        source: 'Gen ' + gen,
+        target: region,
+        value: counter[gen]
+      })
+    }
+  })
+  return links
+}
+
+const viriantChartOption = ref({
+  tooltip: {
+    trigger: 'item'
+  },
+  color: standardColorSeries.slice(0, 15),
+  series: {
+    type: 'sankey',
+    layout: 'none',
+    emphasis: {
+      focus: 'adjacency'
+    },
+    data: buildViriantChartData(),
+    links: buildViriantChartLinks(),
+    lineStyle: { color: 'gradient' }
+  }
+})
+
+
+// Chart 5: the tree map of pokemon's abilities
+interface AbilityCounter {
+  [ability: string]: [number, number, number] // [ability1, ability2, hidden ability]
+}
+let abilityCounter = {} as AbilityCounter
+const abilityProperties = ['Ability1', 'Ability2', 'Ability_Hidden']
+data.forEach(pokemon => {
+  for (let i = 0; i < 3; i++) {
+      const property = abilityProperties[i] as keyof Pokemon
+      const ability = pokemon[property]
+      if (ability != '') {
+        if (!(ability in abilityCounter))
+          abilityCounter[ability] = [0, 0, 0]
+        abilityCounter[ability][i]++
+      }
+    }
+})
+
+interface AbilityNode {
+  name: string,
+  value: number,
+  children: {name: string, value: number}[]
+}
+
+let abilityData = [] as AbilityNode[]
+for (const ability in abilityCounter) {
+  const count = abilityCounter[ability]
+  abilityData.push({
+    name: ability,
+    value: count[0] + count[1] + count[2],
+    children: [
+      { name: ability + '\n(as first)', value: count[0] },
+      { name: ability + '\n(as second)', value: count[1]},
+      { name: ability + '\n(as hidden)', value: count[2]}
+    ]
+  })
+}
+
+function abilityCountCompare(count1: AbilityNode, count2: AbilityNode) {
+  let totalCount1 = 0
+  count1.children.forEach(child => totalCount1 = totalCount1 + child.value)
+  let totalCount2 = 0
+  count2.children.forEach(child => totalCount2 = totalCount2 + child.value)
+  if (totalCount1 < totalCount2) return -1
+  else if (totalCount1 > totalCount2) return 1
+  else return 0
+}
+
+abilityData.sort(abilityCountCompare)
+abilityData = abilityData.slice(-18, -1)
+
+const abilityChartOption = ref({
+  tooltip: {
+    trigger: 'item'
+  },
+  roam: false,
+  color: standardColorSeries,
+  series: [
+    {
+      type: 'treemap',
+      data: abilityData
+    }
+  ]
+})
 
 </script>
 
@@ -449,6 +634,16 @@ const statBoxOption = ref({
   }
 
   #StatBoxChart {
+    width: 100%;
+    height: 90vh;
+  }
+
+  #ViriantChart {
+    width: 100%;
+    height: 90vh;
+  }
+
+  #AbilityChart {
     width: 100%;
     height: 90vh;
   }
