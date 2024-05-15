@@ -8,7 +8,7 @@
     </div>
     <div id="ChartArea">
       <div id="TypeChart" class="chartWrapper">
-        <h2>Pokemons' Types</h2>
+        <h2>pokemons' Types</h2>
         <v-chart class="chart" :option="typeChartOption" autoresize />
       </div>
       <div id="ColorChart" class="chartWrapper">
@@ -19,9 +19,9 @@
         <h2>Pokemon's Stats</h2>
         <v-chart class="chart" :option="statBoxOption" autoresize />
       </div>
-      <div id="ViriantChart" class="chartWrapper">
-        <h2>Pokemon's Regional Viriants</h2>
-        <v-chart class="chart" :option="viriantChartOption" autoresize />
+      <div id="VariantChart" class="chartWrapper">
+        <h2>Pokemon's Regional Variants</h2>
+        <v-chart class="chart" :option="variantChartOption" autoresize />
       </div>
       <div id="AbilityChart" class="chartWrapper">
         <h2>Pokemon's Abilities</h2>
@@ -415,51 +415,51 @@ const statBoxOption = ref({
 })
 
 
-// Chart 4: the pie chart of pokemon's regional viriant
+// Chart 4: the pie chart of pokemon's regional variant
 // Construct the table of each pokemon and its regional forms, and then filter the table.
-interface ViriantItem {
+interface VariantItem {
   originalForm: Pokemon,
   regionalForm: Pokemon[]
 }
-let virants: ViriantItem[] = [{originalForm: data[0], regionalForm: []}]
+let variants: VariantItem[] = [{originalForm: data[0], regionalForm: []}]
 data.forEach(pokemon => {
-  if (pokemon.No === virants.slice(-1)[0].originalForm.No)
+  if (pokemon.No === variants.slice(-1)[0].originalForm.No)
   {
     if (pokemon.Region_Form_Flag === 1)
-      virants.slice(-1)[0].regionalForm.push(pokemon)
+      variants.slice(-1)[0].regionalForm.push(pokemon)
   }
   else
-    virants.push({originalForm: pokemon, regionalForm: []})
+    variants.push({originalForm: pokemon, regionalForm: []})
 })
-virants = virants.filter(el => {
+variants = variants.filter(el => {
   return el.regionalForm.length > 0
 })
 
-// Count distribution of regions and orignal generation
-interface ViriantCounter {
+// Count distribution of regions and original generation
+interface VariantCounter {
   [region: string]: {[gen: number]: number},
 }
-let viriantCounter = {} as ViriantCounter
+let variantCounter = {} as VariantCounter
 let regionNames = [] as string[]
 let generations = new Set<number>()
-virants.forEach(el => {
+variants.forEach(el => {
   el.regionalForm.forEach(v => {
     let originalGen = el.originalForm.Gen
     let region = v.Name.split(' ')[0]
-    if (!(region in viriantCounter)) {
-      viriantCounter[region] = {}
+    if (!(region in variantCounter)) {
+      variantCounter[region] = {}
       regionNames.push(region)
     }
-    if (!(originalGen in viriantCounter[region])) {
-      viriantCounter[region][originalGen] = 0
+    if (!(originalGen in variantCounter[region])) {
+      variantCounter[region][originalGen] = 0
       generations.add(originalGen)
     }
-    viriantCounter[region][originalGen]++
+    variantCounter[region][originalGen]++
   })
 })
 
 
-function buildViriantChartData() {
+function buildVariantChartData() {
   let data = [] as {}[]
   let i = 0
   regionNames.forEach(region => {
@@ -483,10 +483,10 @@ function buildViriantChartData() {
   return data
 }
 
-function buildViriantChartLinks() {
+function buildVariantChartLinks() {
   let links = [] as {source: string, target: string, value: number}[]
   regionNames.forEach(region => {
-    const counter = viriantCounter[region]
+    const counter = variantCounter[region]
     for (const gen in counter) {
       links.push({
         source: 'Gen ' + gen,
@@ -498,7 +498,7 @@ function buildViriantChartLinks() {
   return links
 }
 
-const viriantChartOption = ref({
+const variantChartOption = ref({
   tooltip: {
     trigger: 'item'
   },
@@ -509,8 +509,8 @@ const viriantChartOption = ref({
     emphasis: {
       focus: 'adjacency'
     },
-    data: buildViriantChartData(),
-    links: buildViriantChartLinks(),
+    data: buildVariantChartData(),
+    links: buildVariantChartLinks(),
     lineStyle: { color: 'gradient' }
   }
 })
@@ -638,7 +638,7 @@ const abilityChartOption = ref({
     height: 90vh;
   }
 
-  #ViriantChart {
+  #VariantChart {
     width: 100%;
     height: 90vh;
   }
