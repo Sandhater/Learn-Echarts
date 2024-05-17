@@ -128,7 +128,7 @@ const standardTypeSeries = ['Grass', 'Fire', 'Water', 'Electric', 'Ice', 'Ground
 const standardColorSeries = ['#429837', '#e7623d', '#2e9be3', '#f4cc1b', '#43c7c6', '#a47840', '#73abcf', '#a5a580', '#818181', '#9ba32a', '#9257ca', '#e29219', '#e66d8f', '#6b476e', '#536eb7', '#69acc5', '#4d4646', '#da84d3']
  
 
-// Chart 1: the bar chart about pokemons' types.
+//#region Chart 1: the bar chart about pokemons' types.
 interface TypeCounter {
   [type: string]: [number, number, number]
 }
@@ -218,9 +218,10 @@ const typeChartOption = ref({
     }
   ]
 })
+//#endregion
 
 
-// Chart 2: the heatmap chart of pokemons' type and colors
+//#region Chart 2: The heatmap chart of pokemons' type and colors
 interface ColorCounterItem {
   [color: string]: number
 }
@@ -324,9 +325,10 @@ const colorChartOption = ref({
     }
   ]
 })
+//#endregion
 
 
-// Chart 3: the scatter chart of pokemons' stat
+//#region Chart 3: the scatter chart of pokemons' stat
 const statNames:string[] = ['Attack', 'Defense', 'SP_Attack', 'SP_Defense', 'Speed', 'HP']
 const statsByCategory = {
   Ordinary: [[], [], [], [], [], []] as number[][],
@@ -413,9 +415,10 @@ const statBoxOption = ref({
     }
   ]
 })
+//#endregion
 
 
-// Chart 4: the pie chart of pokemon's regional variant
+//#region Chart 4: the pie chart of pokemon's regional variant
 // Construct the table of each pokemon and its regional forms, and then filter the table.
 interface VariantItem {
   originalForm: Pokemon,
@@ -457,7 +460,6 @@ variants.forEach(el => {
     variantCounter[region][originalGen]++
   })
 })
-
 
 function buildVariantChartData() {
   let data = [] as {}[]
@@ -514,9 +516,10 @@ const variantChartOption = ref({
     lineStyle: { color: 'gradient' }
   }
 })
+//#endregion
 
 
-// Chart 5: the tree map of pokemon's abilities
+//#region Chart 5: the tree map of pokemon's abilities
 interface AbilityCounter {
   [ability: string]: [number, number, number] // [ability1, ability2, hidden ability]
 }
@@ -580,6 +583,8 @@ const abilityChartOption = ref({
     }
   ]
 })
+//#endregion
+
 
 </script>
 
