@@ -27,16 +27,33 @@
         <h2>Pokemon's Abilities</h2>
         <v-chart class="chart" :option="abilityChartOption" autoresize />
       </div>
+      <div id="EggGroupChart" class="chartWrapper">
+        <h2>Pokemon's Egg Groups and Gender Ratio</h2>
+        <p>Input pokemons' No. to see their egg groups. The legend shows their first egg groups, and the links show which two pokemons can breed.</p>
+        <p class="hint">Hint: pokemons with the same <b>NO.</b> (whether or not they are regional variants, mega-evolved, etc.)
+        share the same egg groups, with exception of <b>Cosplay Pikachu</b>, <b>Pikachu in a Cap</b> and <b>Ash Greninja</b>.</p>
+        <div class="operationPanel">
+          <div class="inputArea">
+            <input type="number" class="numberInput" @input="checkModelInput"
+                   v-for="m in eggGroupModels" :key="m.index" v-model="m.model" />
+          </div>
+          <div class="buttonArea">
+            <button class="randomBtn" @click="randomModelInput">🎲 Random</button>
+            <button class="confirmBtn" @click="confirmModelInput">👌 Confirm</button>
+          </div>
+        </div>
+        <v-chart class="chart" :option="eggGroupChartOption" autoresize :ref="EggGroupChart" />
+      </div>
     </div>
   </div>
 </template>
 
 
 <script setup lang="ts">
-import { ref, reactive, provide } from 'vue'
+import {ref, reactive, provide, computed} from 'vue'
 import { use } from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
-import { PieChart, BarChart, ScatterChart, HeatmapChart, BoxplotChart, SankeyChart, TreemapChart } from 'echarts/charts';
+import { PieChart, BarChart, ScatterChart, HeatmapChart, BoxplotChart, SankeyChart, TreemapChart, GraphChart } from 'echarts/charts';
 import {
   GridComponent,
   MarkLineComponent,
@@ -62,6 +79,7 @@ use([
   HeatmapChart,
   BoxplotChart,
   SankeyChart,
+  GraphChart,
   TreemapChart,
   GridComponent,
   MarkLineComponent,
@@ -100,8 +118,8 @@ class Pokemon {
   public Gender_Unknown: number = 0
   public Egg_Cycles: number = 0
   public Egg_Steps: number = 0
-  public Egg_Groups1: string = ''
-  public Egg_Groups2: string = ''
+  public Egg_Group1: string = ''
+  public Egg_Group2: string = ''
   public Get_Rate: number = 0
   public Base_Experience: number = 0
   public Experience_Type: number = 0
@@ -155,7 +173,7 @@ for (const typeName in typeCounter) {
   flattenedTypeCounter[2].push(typeCounter[typeName][2])   // Secondary type pokemons' counts
 }
 
-const typeChartOption = ref({
+const typeChartOption = computed(() => { return {
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -217,7 +235,7 @@ const typeChartOption = ref({
       data: flattenedTypeCounter[2]
     }
   ]
-})
+}})
 //#endregion
 
 
@@ -272,7 +290,7 @@ for(let i = 0; i < typeNames.length; i++) {
   }
 }
 
-const colorChartOption = ref({
+const colorChartOption = computed(() => { return {
   tooltip: {
     position: 'top'
   },
@@ -324,7 +342,7 @@ const colorChartOption = ref({
       }
     }
   ]
-})
+}})
 //#endregion
 
 
@@ -357,7 +375,7 @@ for (let i = 0; i < statNames.length; i++) {
   statsAnalysis.Legendary.push(boxplotAnalyze(statsByCategory.Legendary[i]))
 }
 
-const statBoxOption = ref({
+const statBoxOption = computed(() => { return {
   grid: {
     left: '5%',
     right: '8%',
@@ -414,7 +432,7 @@ const statBoxOption = ref({
       data: statsAnalysis.Legendary
     }
   ]
-})
+}})
 //#endregion
 
 
@@ -438,69 +456,61 @@ variants = variants.filter(el => {
   return el.regionalForm.length > 0
 })
 
-// Count distribution of regions and original generation
+// Count variants according to original generation, and then local areas
 interface VariantCounter {
-  [region: string]: {[gen: number]: number},
+  [generation: string]: {[region: string]: number}
 }
 let variantCounter = {} as VariantCounter
-let regionNames = [] as string[]
-let generations = new Set<number>()
-variants.forEach(el => {
-  el.regionalForm.forEach(v => {
-    let originalGen = el.originalForm.Gen
-    let region = v.Name.split(' ')[0]
-    if (!(region in variantCounter)) {
-      variantCounter[region] = {}
-      regionNames.push(region)
-    }
-    if (!(originalGen in variantCounter[region])) {
-      variantCounter[region][originalGen] = 0
-      generations.add(originalGen)
-    }
-    variantCounter[region][originalGen]++
+let regionNames = new Set<string>()
+variants.forEach(group => {
+  let originalGen = 'Gen ' + group.originalForm.Gen;
+  if (!(originalGen in variantCounter))
+    variantCounter[originalGen] = {}
+  group.regionalForm.forEach(variant => {
+    let region = variant.Name.split(' ')[0]
+    regionNames.add(region)
+    if (!(region in variantCounter[originalGen]))
+      variantCounter[originalGen][region] = 0
+    variantCounter[originalGen][region]++
   })
 })
 
 function buildVariantChartData() {
-  let data = [] as {}[]
+  let chartData = [] as {}[]
   let i = 0
+  for (const gen in variantCounter) {
+    chartData.push({
+      name: gen,
+      itemStyle: { color: standardColorSeries[i] }
+    })
+    i = (i + 1) % standardColorSeries.length
+  }
   regionNames.forEach(region => {
-    data.push({
+    chartData.push({
       name: region,
-      itemStyle: {color: standardColorSeries[i]}
+      itemStyle: { color: standardColorSeries[i] }
     })
-    i++
-    if (i > standardColorSeries.length - 1)
-      i = 0
+    i = (i + 1) % standardColorSeries.length
   })
-  generations.forEach(gen => {
-    data.push({
-      name: 'Gen ' + gen,
-      itemStyle: {color: standardColorSeries[i]}
-    })
-    i++
-    if (i > standardColorSeries.length - 1)
-      i = 0
-  })
-  return data
+  return chartData
 }
 
 function buildVariantChartLinks() {
-  let links = [] as {source: string, target: string, value: number}[]
-  regionNames.forEach(region => {
-    const counter = variantCounter[region]
-    for (const gen in counter) {
+  let links = [] as { source: string, target: string, value: number }[]
+  for (const gen in variantCounter) {
+    const counter = variantCounter[gen]
+    for (const region in counter) {
       links.push({
-        source: 'Gen ' + gen,
+        source: gen,
         target: region,
-        value: counter[gen]
+        value: counter[region]
       })
     }
-  })
+  }
   return links
 }
 
-const variantChartOption = ref({
+const variantChartOption = computed(() => { return {
   tooltip: {
     trigger: 'item'
   },
@@ -511,11 +521,12 @@ const variantChartOption = ref({
     emphasis: {
       focus: 'adjacency'
     },
+    layoutIterations: 0,
     data: buildVariantChartData(),
     links: buildVariantChartLinks(),
     lineStyle: { color: 'gradient' }
   }
-})
+}})
 //#endregion
 
 
@@ -570,7 +581,7 @@ function abilityCountCompare(count1: AbilityNode, count2: AbilityNode) {
 abilityData.sort(abilityCountCompare)
 abilityData = abilityData.slice(-18, -1)
 
-const abilityChartOption = ref({
+const abilityChartOption = computed(() => { return {
   tooltip: {
     trigger: 'item'
   },
@@ -582,9 +593,173 @@ const abilityChartOption = ref({
       data: abilityData
     }
   ]
-})
+}})
 //#endregion
 
+
+//#region Chart 6: the relation graph or pokemon's egg groups
+const PokemonLatestNumber: number = data[data.length - 1].No
+
+// Control the input No. of pokemons that will be checked for their egg groups
+function buildInputModelsForEggGroup(): { index: number, model: number }[] {
+  let models = [] as { index: number, model: number }[]
+  for (let i = 0; i < 16; i++)
+    models.push({index: i, model: (i + 1) * 16})
+  models[0].model = 132   // The No.132 pokemon: Ditto
+  return models
+}
+const eggGroupModels = ref(buildInputModelsForEggGroup())
+function checkModelInput() {
+  eggGroupModels.value.forEach(m => {
+    if (m.model < 1) m.model = 1
+    if (m.model > PokemonLatestNumber) m.model = PokemonLatestNumber
+  })
+}
+
+function randomModelInput() {
+  // To avoid duplication, randomly select numbers from different ranges.
+  let start = 1
+  const step = 60
+  eggGroupModels.value.forEach(m => {
+    m.model = start + Math.floor(Math.random() * step)
+    start += step
+  })
+  confirmModelInput()
+}
+
+// Prepare for the graph chart of egg groups
+const eggGroupNodes = ref([] as {}[])
+const eggGroupLinks = ref([] as {}[])
+const eggGroupCategories = ref([] as {}[])
+
+
+const EggGroupChart = ref()
+function confirmModelInput() {
+  // First check if there are duplicated numbers, which will cause Echarts to crash
+  const modelSet = new Set<number>()
+  eggGroupModels.value.forEach(m => modelSet.add(m.model))
+  if (modelSet.size < eggGroupModels.value.length) {
+    alert('Duplicated numbers!')
+    return
+  }
+
+  eggGroupNodes.value = []
+  eggGroupLinks.value = []
+  eggGroupCategories.value = []
+
+  const selectedPokemons = [] as Pokemon[]
+  let categorySet = new Set<string>()
+  eggGroupModels.value.forEach(m => {
+    // Step 1: build the nodes of the graph chart
+    // Because a pokemon's index will always be less than its No., we can avoid many unnecessary searches.
+    for (let i = m.model - 1; i <= data.length; i++) {
+      if (data[i].No === m.model) {
+        const pokemon: Pokemon = data[i]
+        eggGroupNodes.value.push({
+          name: pokemon.Original_Name,
+          value: nodeValueFromGender(pokemon.Egg_Group1, pokemon.Egg_Group2, pokemon.Gender_Male, pokemon.Gender_Female, pokemon.Gender_Unknown),
+          symbolSize: nodeSizeFromGender(pokemon.Gender_Male, pokemon.Gender_Female, pokemon.Gender_Unknown),
+          category: pokemon.Egg_Group1
+        })
+        selectedPokemons.push(pokemon)
+        categorySet.add(pokemon.Egg_Group1)
+        break
+      }
+    }
+  })
+
+  // Step 2 : build the links of the graph chart
+  // Specially, the links will start from the pokemon with more males and earlier number
+  for (let i = 0; i < selectedPokemons.length; i++) {
+    for (let j = i + 1; j < selectedPokemons.length; j++) {
+      const pokemon1 = selectedPokemons[i]
+      const pokemon2 = selectedPokemons[j]
+      // Pokemons of undiscovered egg groups can not breed
+      if (pokemon1.Egg_Group1 === 'Undiscovered' || pokemon2.Egg_Group1 === 'Undiscovered')
+        continue
+      // Ditto (No.132) can breed with most pokemons
+      if (pokemon1.Egg_Group1 === 'Ditto' && pokemon2.Egg_Group1 != 'Ditto')
+        eggGroupLinks.value.push({ source: j, target: i })
+      else if (pokemon1.Egg_Group1 != 'Ditto' && pokemon2.Egg_Group1 === 'Ditto')
+        eggGroupLinks.value.push({ source: i, target: j })
+      // Pokemons with the same single gender cannot breed
+      else if ((pokemon1.Gender_Male === 100 && pokemon2.Gender_Male === 100) || (pokemon1.Gender_Female === 100 && pokemon2.Gender_Female === 100)
+          || (pokemon1.Gender_Unknown === 100 && pokemon2.Gender_Unknown === 100))
+        continue
+      // Pokemons sharing the same egg group can breed
+      else if (pokemon1.Egg_Group1 === pokemon2.Egg_Group1 || pokemon1.Egg_Group1 === pokemon2.Egg_Group2
+          || (pokemon1.Egg_Group2 != '' && (pokemon1.Egg_Group2 === pokemon2.Egg_Group1 || pokemon1.Egg_Group2 === pokemon2.Egg_Group2))) {
+        if (pokemon1.Gender_Male > pokemon2.Gender_Female)
+          eggGroupLinks.value.push({ source: i, target: j })
+        else if (pokemon1.Gender_Male < pokemon2.Gender_Female)
+          eggGroupLinks.value.push({ source: j, target: i })
+        else if (pokemon1.No < pokemon2.No)
+          eggGroupLinks.value.push({ source: i, target: j })
+        else
+          eggGroupLinks.value.push({ source: j, target: i })
+      }
+    }
+  }
+
+  // Step 3: build the categories of the graph chart
+  categorySet.forEach(category => {
+    eggGroupCategories.value.push({name: category})
+  })
+}
+
+function nodeValueFromGender(eggGroup1: string, eggGroup2: string, genderMale: number, genderFemale: number, genderUnknown: number): string {
+  let eggGroupStr = eggGroup1
+  if (eggGroup2 != '')
+    eggGroupStr = `${eggGroup1} + ${eggGroup2}`
+  if (genderUnknown === 0)
+    return `${eggGroupStr};\n♂ ${genderMale}%, ♀ ${genderFemale}%`
+  else
+    return `${eggGroupStr};\nGender Unknown`
+}
+
+function nodeSizeFromGender(genderMale: number, genderFemale: number, genderUnknown: number): number {
+  const standardSize = 12.0
+  if (genderUnknown === 100)
+    return standardSize
+  else
+    return standardSize * ((genderMale * genderMale + 50) / 2550)
+}
+
+confirmModelInput()
+
+const eggGroupChartOption = computed(() => { return {
+  tooltip: {
+    trigger: 'item',
+  },
+  color: standardColorSeries,
+  legend: eggGroupCategories.value,
+  animationDurationUpdate: 1500,
+  animationEasingUpdate: 'quinticInOut',
+  series: [
+    {
+      name: 'Egg Groups & Gender Ratio',
+      type: 'graph',
+      layout: 'circular',
+      circular: {
+        rotateLabel: false
+      },
+      data: eggGroupNodes.value,
+      links: eggGroupLinks.value,
+      categories: eggGroupCategories.value,
+      roam: true,
+      label: {
+        position: 'right',
+        formatter: '{b}'
+      },
+      lineStyle: {
+        color: 'source',
+        curveness: 0.3
+      }
+    }
+  ]
+}})
+
+//#endregion
 
 </script>
 
@@ -652,6 +827,58 @@ const abilityChartOption = ref({
     width: 100%;
     height: 90vh;
   }
+
+  #EggGroupChart {
+    width: 100%;
+    height: 120vh;
+
+    .operationPanel {
+      margin-bottom: 2rem;
+
+      .inputArea {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        width: 100%;
+
+        input.numberInput {
+          margin-bottom: 1rem;
+          padding: 0 0.5rem;
+          width: 12%;
+          height: 2rem;
+          border: 1px solid var(--light-grey);
+          border-radius: 4px;
+          outline: none;
+          background: none;
+        }
+      }
+
+      .buttonArea {
+        display: flex;
+        justify-content: center;
+
+        button {
+          width: 20%;
+          height: 2rem;
+          border: 1px solid #429837;
+          border-radius: 4px;
+          background: white;
+          color: #429837;
+          font-weight: 800;
+          cursor: pointer;
+
+          &:hover {
+              background: #429837;
+              color: white;
+          }
+
+          &:not(:last-child) {
+            margin-right: 2rem;
+          }
+        }
+      }
+    }
+  }
 }
 
 .chartWrapper {
@@ -684,7 +911,16 @@ const abilityChartOption = ref({
     width: 100%;
     height: 100%;
     overflow: hidden;
-}
+  }
+
+  p {
+    margin-bottom: 1rem;
+  }
+
+  .hint {
+    color: var(--text-color3);
+    font-style: italic;
+  }
 }
 
 </style>
