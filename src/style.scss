@@ -46,3 +46,26 @@ body.dark-mode {
 
   color: var(--text-color1);
 }
+
+
+#InfoArea {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 8rem;
+  padding: 1.5rem 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px var(--light-grey) solid;
+
+  h1 {
+    height: fit-content;
+    font-size: 2rem;
+  }
+
+  p {
+    a {
+      color: var(--theme-color2);
+      font-weight: 600;
+    }
+  }
+}

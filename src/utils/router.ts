@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import HomePage from '../pages/HomePage.vue'
 import PokemonPage from '../pages/PokemonPage.vue'
-import ChinaResortPage from '../pages/ChinaResortPage.vue'
+import WorldPopulationPage from "../pages/WorldPopulationPage.vue";
 
 
 interface Route {
@@ -30,7 +30,7 @@ function buildRoute(path: string, component: any, name='New Page', dataPage=fals
 const routes = [
   buildRoute('/', HomePage),
   buildRoute('/pokemon', PokemonPage, 'Pokémon', true),
-  buildRoute('/china-resort', ChinaResortPage, 'China Resort', true)
+  buildRoute('/world-population', WorldPopulationPage, 'World Population', true)
 ]
 
 const router = createRouter({

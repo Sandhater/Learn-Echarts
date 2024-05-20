@@ -1,14 +1,3 @@
-<<template>
-  <div id="HomePage">
-    <div class="page-card" v-for="page in pages">
-      <RouterLink :to="page.path">
-        {{ page.meta.name }}
-      </RouterLink>
-    </div>
-  </div>
-</template>
-
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { routes } from '../utils/router'
@@ -20,6 +9,15 @@ const pages = ref(routes.filter(route => {
 
 </script>
 
+<<template>
+  <div id="HomePage">
+    <div class="page-card" v-for="page in pages">
+      <RouterLink :to="page.path">
+        {{ page.meta.name }}
+      </RouterLink>
+    </div>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 

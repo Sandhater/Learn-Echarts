@@ -8,8 +8,8 @@ const compare = (x: number, y: number) => {
 
 /**
  * Analyze a data list and calculate the info needed to draw a boxplot
- * @param data: the data to analyze
  * @returns the array of []
+ * @param data
  */
 function boxplotAnalyze(data: number[]): number[] {
   // let mean: number = data.reduce(sum)/data.length

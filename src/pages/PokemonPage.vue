@@ -1,58 +1,7 @@
-<template>
-  <div id="PokemonPage">
-    <div id="InfoArea">
-      <h1>Pokémon Data</h1>
-      <p>Based on the dataset
-        <a target="_blank" href="https://www.kaggle.com/datasets/ingmateleal/pokemon-all-9-gen-information">Pokemon all 9 gen information</a>
-        on kaggle.</p>
-    </div>
-    <div id="ChartArea">
-      <div id="TypeChart" class="chartWrapper">
-        <h2>pokemons' Types</h2>
-        <v-chart class="chart" :option="typeChartOption" autoresize />
-      </div>
-      <div id="ColorChart" class="chartWrapper">
-        <h2>Pokemon's Colors</h2>
-        <v-chart class="chart" :option="colorChartOption" autoresize />
-      </div>
-      <div id="StatBoxChart" class="chartWrapper">
-        <h2>Pokemon's Stats</h2>
-        <v-chart class="chart" :option="statBoxOption" autoresize />
-      </div>
-      <div id="VariantChart" class="chartWrapper">
-        <h2>Pokemon's Regional Variants</h2>
-        <v-chart class="chart" :option="variantChartOption" autoresize />
-      </div>
-      <div id="AbilityChart" class="chartWrapper">
-        <h2>Pokemon's Abilities</h2>
-        <v-chart class="chart" :option="abilityChartOption" autoresize />
-      </div>
-      <div id="EggGroupChart" class="chartWrapper">
-        <h2>Pokemon's Egg Groups and Gender Ratio</h2>
-        <p>Input pokemons' No. to see their egg groups. The legend shows their first egg groups, and the links show which two pokemons can breed.</p>
-        <p class="hint">Hint: pokemons with the same <b>NO.</b> (whether or not they are regional variants, mega-evolved, etc.)
-        share the same egg groups, with exception of <b>Cosplay Pikachu</b>, <b>Pikachu in a Cap</b> and <b>Ash Greninja</b>.</p>
-        <div class="operationPanel">
-          <div class="inputArea">
-            <input type="number" class="numberInput" @input="checkModelInput"
-                   v-for="m in eggGroupModels" :key="m.index" v-model="m.model" />
-          </div>
-          <div class="buttonArea">
-            <button class="randomBtn" @click="randomModelInput">🎲 Random</button>
-            <button class="confirmBtn" @click="confirmModelInput">👌 Confirm</button>
-          </div>
-        </div>
-        <v-chart class="chart" :option="eggGroupChartOption" autoresize :ref="EggGroupChart" />
-      </div>
-    </div>
-  </div>
-</template>
-
-
 <script setup lang="ts">
-import {ref, reactive, provide, computed} from 'vue'
-import { use } from 'echarts/core';
-import { SVGRenderer } from 'echarts/renderers';
+import {ref, computed} from 'vue'
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
 import { PieChart, BarChart, ScatterChart, HeatmapChart, BoxplotChart, SankeyChart, TreemapChart, GraphChart } from 'echarts/charts';
 import {
   GridComponent,
@@ -63,8 +12,8 @@ import {
   VisualMapComponent,
   DataZoomComponent,
   DatasetComponent
-} from 'echarts/components';
-import VChart, { THEME_KEY } from 'vue-echarts';
+} from 'echarts/components'
+import VChart, { THEME_KEY } from 'vue-echarts'
 
 import jsonToInterface from '../utils/jsonToInterface'
 import dataset from '../data/pokemon.json'
@@ -89,7 +38,7 @@ use([
   VisualMapComponent,
   DataZoomComponent,
   DatasetComponent
-]);
+])
 
 // provide(THEME_KEY, 'dark')
 
@@ -764,6 +713,57 @@ const eggGroupChartOption = computed(() => { return {
 </script>
 
 
+<template>
+  <div id="PokemonPage">
+    <div id="InfoArea">
+      <h1>Pokémon Data</h1>
+      <p>Based on the dataset
+        <a target="_blank" href="https://www.kaggle.com/datasets/ingmateleal/pokemon-all-9-gen-information">Pokemon all 9 gen information</a>
+        on kaggle.</p>
+    </div>
+    <div id="ChartArea">
+      <div id="TypeChart" class="chartWrapper">
+        <h2>pokemons' Types</h2>
+        <v-chart class="chart" :option="typeChartOption" autoresize />
+      </div>
+      <div id="ColorChart" class="chartWrapper">
+        <h2>Pokemon's Colors</h2>
+        <v-chart class="chart" :option="colorChartOption" autoresize />
+      </div>
+      <div id="StatBoxChart" class="chartWrapper">
+        <h2>Pokemon's Stats</h2>
+        <v-chart class="chart" :option="statBoxOption" autoresize />
+      </div>
+      <div id="VariantChart" class="chartWrapper">
+        <h2>Pokemon's Regional Variants</h2>
+        <v-chart class="chart" :option="variantChartOption" autoresize />
+      </div>
+      <div id="AbilityChart" class="chartWrapper">
+        <h2>Pokemon's Abilities</h2>
+        <v-chart class="chart" :option="abilityChartOption" autoresize />
+      </div>
+      <div id="EggGroupChart" class="chartWrapper">
+        <h2>Pokemon's Egg Groups and Gender Ratio</h2>
+        <p>Input pokemons' No. to see their egg groups. The legend shows their first egg groups, and the links show which two pokemons can breed.</p>
+        <p class="hint">Hint: pokemons with the same <b>NO.</b> (whether or not they are regional variants, mega-evolved, etc.)
+        share the same egg groups, with exception of <b>Cosplay Pikachu</b>, <b>Pikachu in a Cap</b> and <b>Ash Greninja</b>.</p>
+        <div class="operationPanel">
+          <div class="inputArea">
+            <input type="number" class="numberInput" @input="checkModelInput"
+                   v-for="m in eggGroupModels" :key="m.index" v-model="m.model" />
+          </div>
+          <div class="buttonArea">
+            <button class="randomBtn" @click="randomModelInput">🎲 Random</button>
+            <button class="confirmBtn" @click="confirmModelInput">👌 Confirm</button>
+          </div>
+        </div>
+        <v-chart class="chart" :option="eggGroupChartOption" autoresize :ref="EggGroupChart" />
+      </div>
+    </div>
+  </div>
+</template>
+
+
 <style lang="scss" scoped>
 #PokemonPage {
   --theme-color1: #429837;
@@ -772,28 +772,6 @@ const eggGroupChartOption = computed(() => { return {
   --theme-color4: #f4cc1b;
 
   padding: 0 var(--content-margin);
-}
-
-#InfoArea {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 8rem;
-  padding: 1.5rem 0;
-  margin-bottom: 2rem;
-  border-bottom: 1px var(--light-grey) solid;
-
-  h1 {
-    height: fit-content;
-    font-size: 2rem;
-  }
-
-  p {
-    a {
-      color: var(--theme-color2);
-      font-weight: 600;
-    }
-  }
 }
 
 #ChartArea {
