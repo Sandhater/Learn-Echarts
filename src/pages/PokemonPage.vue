@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {ref, computed} from 'vue'
+import { EChartsOption } from 'echarts'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { PieChart, BarChart, ScatterChart, HeatmapChart, BoxplotChart, SankeyChart, TreemapChart, GraphChart } from 'echarts/charts';
@@ -15,7 +16,7 @@ import {
 } from 'echarts/components'
 import VChart, { THEME_KEY } from 'vue-echarts'
 
-import jsonToInterface from '../utils/jsonToInterface'
+import jsonToObject from '../utils/jsonToObject.ts'
 import dataset from '../data/pokemon.json'
 import { boxplotAnalyze } from '../utils/statistic'
 
@@ -89,10 +90,10 @@ class Pokemon {
   public E_Speed: number = 0
 }
 
-const data: Pokemon[] = dataset.map(el => jsonToInterface<Pokemon>(Pokemon, el))
+const data: Pokemon[] = dataset.map(el => jsonToObject<Pokemon>(Pokemon, el))
 
-const standardTypeSeries = ['Grass', 'Fire', 'Water', 'Electric', 'Ice', 'Ground', 'Flying', 'Rock', 'Normal', 'Bug', 'Poison', 'Fighting', 'Psychic', 'Ghost', 'Dragon', 'Steel', 'Dark', 'Fairy']
-const standardColorSeries = ['#429837', '#e7623d', '#2e9be3', '#f4cc1b', '#43c7c6', '#a47840', '#73abcf', '#a5a580', '#818181', '#9ba32a', '#9257ca', '#e29219', '#e66d8f', '#6b476e', '#536eb7', '#69acc5', '#4d4646', '#da84d3']
+const STANDARD_TYPE_SERIES = ['Grass', 'Fire', 'Water', 'Electric', 'Ice', 'Ground', 'Flying', 'Rock', 'Normal', 'Bug', 'Poison', 'Fighting', 'Psychic', 'Ghost', 'Dragon', 'Steel', 'Dark', 'Fairy']
+const STANDARD_COLOR_SERIES = ['#429837', '#e7623d', '#2e9be3', '#f4cc1b', '#43c7c6', '#a47840', '#73abcf', '#a5a580', '#818181', '#9ba32a', '#9257ca', '#e29219', '#e66d8f', '#6b476e', '#536eb7', '#69acc5', '#4d4646', '#da84d3']
  
 
 //#region Chart 1: the bar chart about pokemons' types.
@@ -122,7 +123,7 @@ for (const typeName in typeCounter) {
   flattenedTypeCounter[2].push(typeCounter[typeName][2])   // Secondary type pokemons' counts
 }
 
-const typeChartOption = computed(() => { return {
+const typeChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -130,7 +131,7 @@ const typeChartOption = computed(() => { return {
     },
     confine: true
   },
-  color: standardColorSeries.slice(1, 4),
+  color: STANDARD_COLOR_SERIES.slice(1, 4),
   legend: {},
   grid: {
     left: '0%',
@@ -239,7 +240,7 @@ for(let i = 0; i < typeNames.length; i++) {
   }
 }
 
-const colorChartOption = computed(() => { return {
+const colorChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     position: 'top'
   },
@@ -272,7 +273,7 @@ const colorChartOption = computed(() => { return {
     top: 'center',
     bottom: '0%',
     inRange: {
-      color: ['WhiteSmoke', standardColorSeries[1]]
+      color: ['WhiteSmoke', STANDARD_COLOR_SERIES[1]]
     }
   },
   series: [
@@ -324,7 +325,7 @@ for (let i = 0; i < statNames.length; i++) {
   statsAnalysis.Legendary.push(boxplotAnalyze(statsByCategory.Legendary[i]))
 }
 
-const statBoxOption = computed(() => { return {
+const statBoxOption = computed<EChartsOption>(() => { return {
   grid: {
     left: '5%',
     right: '8%',
@@ -337,7 +338,7 @@ const statBoxOption = computed(() => { return {
       type: 'line'
     }
   },
-  color: standardColorSeries.slice(1, 5),
+  color: STANDARD_COLOR_SERIES.slice(1, 5),
   legend: {
     data: ['Ordinary', 'Mythical', 'Semi-Legendary', 'Legendary']
   },
@@ -430,16 +431,16 @@ function buildVariantChartData() {
   for (const gen in variantCounter) {
     chartData.push({
       name: gen,
-      itemStyle: { color: standardColorSeries[i] }
+      itemStyle: { color: STANDARD_COLOR_SERIES[i] }
     })
-    i = (i + 1) % standardColorSeries.length
+    i = (i + 1) % STANDARD_COLOR_SERIES.length
   }
   regionNames.forEach(region => {
     chartData.push({
       name: region,
-      itemStyle: { color: standardColorSeries[i] }
+      itemStyle: { color: STANDARD_COLOR_SERIES[i] }
     })
-    i = (i + 1) % standardColorSeries.length
+    i = (i + 1) % STANDARD_COLOR_SERIES.length
   })
   return chartData
 }
@@ -459,11 +460,11 @@ function buildVariantChartLinks() {
   return links
 }
 
-const variantChartOption = computed(() => { return {
+const variantChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     trigger: 'item'
   },
-  color: standardColorSeries.slice(0, 15),
+  color: STANDARD_COLOR_SERIES.slice(0, 15),
   series: {
     type: 'sankey',
     layout: 'none',
@@ -530,12 +531,12 @@ function abilityCountCompare(count1: AbilityNode, count2: AbilityNode) {
 abilityData.sort(abilityCountCompare)
 abilityData = abilityData.slice(-18, -1)
 
-const abilityChartOption = computed(() => { return {
+const abilityChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     trigger: 'item'
   },
   roam: false,
-  color: standardColorSeries,
+  color: STANDARD_COLOR_SERIES,
   series: [
     {
       type: 'treemap',
@@ -676,11 +677,11 @@ function nodeSizeFromGender(genderMale: number, genderFemale: number, genderUnkn
 
 confirmModelInput()
 
-const eggGroupChartOption = computed(() => { return {
+const eggGroupChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     trigger: 'item',
   },
-  color: standardColorSeries,
+  color: STANDARD_COLOR_SERIES,
   legend: eggGroupCategories.value,
   animationDurationUpdate: 1500,
   animationEasingUpdate: 'quinticInOut',
@@ -782,9 +783,9 @@ const eggGroupChartOption = computed(() => { return {
   height: fit-content;
 
   #TypeChart {
-  width: 100%;
-  height: 35vw;
-}
+    width: 100%;
+    height: 35vw;
+  }
 
   #ColorChart {
     width: 100%;
@@ -856,48 +857,6 @@ const eggGroupChartOption = computed(() => { return {
         }
       }
     }
-  }
-}
-
-.chartWrapper {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 2.5rem;
-
-  h2 {
-    display: flex;
-    align-items: center;
-    width: fit-content;
-    height: 2.5rem;
-    padding-left: 1.5rem;
-    position: relative;
-    margin-bottom: 2rem;
-    font-size: 1.5rem;
-  }
-
-  h2::before {
-    content: "";
-    width: 0.75rem;
-    height: 100%;
-    background: var(--theme-color1);
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .chart {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  p {
-    margin-bottom: 1rem;
-  }
-
-  .hint {
-    color: var(--text-color3);
-    font-style: italic;
   }
 }
 

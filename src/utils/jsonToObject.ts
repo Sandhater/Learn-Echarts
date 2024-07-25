@@ -1,4 +1,4 @@
-function jsonToInterface<T extends object>(classType: new() => T, jsonObj: object) {
+function jsonToObject<T extends object>(classType: new() => T, jsonObj: object) {
   type TKey = keyof T
   type KKey = keyof typeof jsonObj
   let result = new classType()
@@ -17,4 +17,4 @@ function jsonToInterface<T extends object>(classType: new() => T, jsonObj: objec
   return result
 }
 
-export default jsonToInterface
+export default jsonToObject
