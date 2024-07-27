@@ -1,6 +1,8 @@
 # Learn-Echarts
 This is the project where I worked to learn `ECharts`. As a **Vue3** project, it features the **composition API**, **TypeScript** and **SCSS**. It also leverages **vue-echarts** to avoid directly operating on DOM, which is usually seen in ECharts tutorials but not recommended by Vue.
 
+The project is available on [GitHub pages](https://sandhater.github.io/Learn-Echarts/).
+
 I will be glad if this can also help you get familiar with the above tools as the example code.😄
 
 ## 📊 Examples of ECharts
