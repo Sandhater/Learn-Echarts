@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, computed} from 'vue'
+import {ref, computed, provide } from 'vue'
 import { EChartsOption } from 'echarts'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -19,6 +19,7 @@ import VChart, { THEME_KEY } from 'vue-echarts'
 import jsonToObject from '../utils/jsonToObject.ts'
 import dataset from '../data/pokemon.json'
 import { boxplotAnalyze } from '../utils/statistic'
+import { useThemeStore } from '../utils/store.ts'
 
 // Prepare the echarts
 use([
@@ -41,17 +42,12 @@ use([
   DatasetComponent
 ])
 
-// provide(THEME_KEY, 'dark')
-
-
-// Preprocess the JSON data
-dataset.forEach(pokemon => {
-  pokemon.Branch_Code = pokemon.Branch_Code.split('_')[1]
-})
+const themeStore = useThemeStore()
+provide(THEME_KEY, themeStore.theme)
 
 class Pokemon {
   public No: number = 0
-  public Branch_Code: number = 0
+  public Branch_Code: string = ''
   public Original_Name: string = ''
   public Name: string = ''
   public Gen: number = 1
@@ -94,7 +90,7 @@ const data: Pokemon[] = dataset.map(el => jsonToObject<Pokemon>(Pokemon, el))
 
 const STANDARD_TYPE_SERIES = ['Grass', 'Fire', 'Water', 'Electric', 'Ice', 'Ground', 'Flying', 'Rock', 'Normal', 'Bug', 'Poison', 'Fighting', 'Psychic', 'Ghost', 'Dragon', 'Steel', 'Dark', 'Fairy']
 const STANDARD_COLOR_SERIES = ['#429837', '#e7623d', '#2e9be3', '#f4cc1b', '#43c7c6', '#a47840', '#73abcf', '#a5a580', '#818181', '#9ba32a', '#9257ca', '#e29219', '#e66d8f', '#6b476e', '#536eb7', '#69acc5', '#4d4646', '#da84d3']
- 
+
 
 //#region Chart 1: the bar chart about pokemons' types.
 interface TypeCounter {
@@ -131,6 +127,7 @@ const typeChartOption = computed<EChartsOption>(() => { return {
     },
     confine: true
   },
+  backgroundColor: 'transparent',
   color: STANDARD_COLOR_SERIES.slice(1, 4),
   legend: {},
   grid: {
@@ -151,8 +148,7 @@ const typeChartOption = computed<EChartsOption>(() => { return {
       name: 'Count',
       nameTextStyle: {
         fontSize: 16,
-        fontWeight: 600,
-        color: 'black'
+        fontWeight: 600
       }
     }
   ],
@@ -244,6 +240,7 @@ const colorChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     position: 'top'
   },
+  backgroundColor: 'transparent',
   grid: {
     left: '5%',
     right: '8%',
@@ -296,7 +293,7 @@ const colorChartOption = computed<EChartsOption>(() => { return {
 //#endregion
 
 
-//#region Chart 3: the scatter chart of pokemons' stat
+//#region Chart 3: the box chart of pokemons' stat
 const statNames:string[] = ['Attack', 'Defense', 'SP_Attack', 'SP_Defense', 'Speed', 'HP']
 const statsByCategory = {
   Ordinary: [[], [], [], [], [], []] as number[][],
@@ -339,6 +336,7 @@ const statBoxOption = computed<EChartsOption>(() => { return {
     }
   },
   color: STANDARD_COLOR_SERIES.slice(1, 5),
+  backgroundColor: 'transparent',
   legend: {
     data: ['Ordinary', 'Mythical', 'Semi-Legendary', 'Legendary']
   },
@@ -356,30 +354,33 @@ const statBoxOption = computed<EChartsOption>(() => { return {
     splitLine: { show: false },
     nameTextStyle: {
       fontSize: 16,
-      fontWeight: 600,
-      color: 'black'
+      fontWeight: 600
     }
   },
   series: [
     {
       name: 'Ordinary',
       type: 'boxplot',
-      data: statsAnalysis.Ordinary
+      data: statsAnalysis.Ordinary,
+      itemStyle: { color: '#ffffff11' }
     },
     {
       name: 'Mythical',
       type: 'boxplot',
-      data: statsAnalysis.Mythical
+      data: statsAnalysis.Mythical,
+      itemStyle: { color: '#ffffff11' }
     },
     {
       name: 'Semi-Legendary',
       type: 'boxplot',
-      data: statsAnalysis['Semi-Legendary']
+      data: statsAnalysis['Semi-Legendary'],
+      itemStyle: { color: '#ffffff11' }
     },
     {
       name: 'Legendary',
       type: 'boxplot',
-      data: statsAnalysis.Legendary
+      data: statsAnalysis.Legendary,
+      itemStyle: { color: '#ffffff11' }
     }
   ]
 }})
@@ -465,6 +466,7 @@ const variantChartOption = computed<EChartsOption>(() => { return {
     trigger: 'item'
   },
   color: STANDARD_COLOR_SERIES.slice(0, 15),
+  backgroundColor: 'transparent',
   series: {
     type: 'sankey',
     layout: 'none',
@@ -537,6 +539,7 @@ const abilityChartOption = computed<EChartsOption>(() => { return {
   },
   roam: false,
   color: STANDARD_COLOR_SERIES,
+  backgroundColor: 'transparent',
   series: [
     {
       type: 'treemap',
@@ -682,6 +685,7 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
     trigger: 'item',
   },
   color: STANDARD_COLOR_SERIES,
+  backgroundColor: 'transparent',
   legend: eggGroupCategories.value,
   animationDurationUpdate: 1500,
   animationEasingUpdate: 'quinticInOut',
@@ -724,27 +728,32 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
     </div>
     <div id="ChartArea">
       <div id="TypeChart" class="chartWrapper">
-        <h2>pokemons' Types</h2>
+        <h2>Pokémons' Types</h2>
+        <p>The count of pokémons of each type.</p>
         <v-chart class="chart" :option="typeChartOption" autoresize />
       </div>
       <div id="ColorChart" class="chartWrapper">
-        <h2>Pokemon's Colors</h2>
+        <h2>Pokémons' Colors</h2>
+        <p>This heat map shows the relationship between pokémons' colors and their types.</p>
         <v-chart class="chart" :option="colorChartOption" autoresize />
       </div>
       <div id="StatBoxChart" class="chartWrapper">
-        <h2>Pokemon's Stats</h2>
+        <h2>Pokémons' Stats</h2>
+        <p>This boxplot chart shows pokémons' stats distribution of different categories.</p>
         <v-chart class="chart" :option="statBoxOption" autoresize />
       </div>
       <div id="VariantChart" class="chartWrapper">
-        <h2>Pokemon's Regional Variants</h2>
+        <h2>Pokémons' Regional Variants</h2>
+        <p>This sankey chart shows how many pokémons introduced in each generation (left) get their variants in each region (right).</p>
         <v-chart class="chart" :option="variantChartOption" autoresize />
       </div>
       <div id="AbilityChart" class="chartWrapper">
-        <h2>Pokemon's Abilities</h2>
+        <h2>Pokémons' Abilities</h2>
+        <p>This tree map chart shows the top 17 common abilities.</p>
         <v-chart class="chart" :option="abilityChartOption" autoresize />
       </div>
       <div id="EggGroupChart" class="chartWrapper">
-        <h2>Pokemon's Egg Groups and Gender Ratio</h2>
+        <h2>Pokémons' Egg Groups and Gender Ratio</h2>
         <p>Input pokemons' No. to see their egg groups. The legend shows their first egg groups, and the links show which two pokemons can breed.</p>
         <p class="hint">Hint: pokemons with the same <b>NO.</b> (whether or not they are regional variants, mega-evolved, etc.)
         share the same egg groups, with exception of <b>Cosplay Pikachu</b>, <b>Pikachu in a Cap</b> and <b>Ash Greninja</b>.</p>
@@ -767,12 +776,21 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
 
 <style lang="scss" scoped>
 #PokemonPage {
-  --theme-color1: #429837;
+  --theme-color1: #f4cc1b;
   --theme-color2: #e7623d;
   --theme-color3: #2e9be3;
-  --theme-color4: #f4cc1b;
+  --theme-color4: #429837;
 
-  padding: 0 var(--content-margin);
+  background: var(--background-color);
+
+  .chartWrapper {
+    padding: 0 var(--content-margin);
+  }
+}
+
+#InfoArea {
+  padding-left: var(--content-margin);
+  padding-right: var(--content-margin);
 }
 
 #ChartArea {
@@ -784,35 +802,52 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
 
   #TypeChart {
     width: 100%;
-    height: 35vw;
+
+    .chart {
+      height: 35vw;
+    }
   }
 
   #ColorChart {
     width: 100%;
-    height: 90vh;
+
+    .chart {
+      height: 90vh;
+    }
   }
 
   #StatBoxChart {
     width: 100%;
-    height: 90vh;
+
+    .chart {
+      height: 60vh;
+    }
   }
 
   #VariantChart {
     width: 100%;
-    height: 90vh;
+
+    .chart {
+      width: 60%;
+      height: 60vh;
+      margin: 0 auto;
+    }
   }
 
   #AbilityChart {
     width: 100%;
+
+    .chart {
     height: 90vh;
+      }
   }
 
   #EggGroupChart {
     width: 100%;
-    height: 120vh;
 
     .operationPanel {
       margin-bottom: 2rem;
+      height: fit-content;
 
       .inputArea {
         display: flex;
@@ -828,7 +863,11 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
           border: 1px solid var(--light-grey);
           border-radius: 4px;
           outline: none;
-          background: none;
+          background: var(--white);
+        }
+
+        input.numberInput::-webkit-scrollbar {
+          display: none;
         }
       }
 
@@ -841,7 +880,7 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
           height: 2rem;
           border: 1px solid #429837;
           border-radius: 4px;
-          background: white;
+          background: var(--white);
           color: #429837;
           font-weight: 800;
           cursor: pointer;
@@ -856,6 +895,10 @@ const eggGroupChartOption = computed<EChartsOption>(() => { return {
           }
         }
       }
+    }
+
+    .chart {
+      height: 80vh;
     }
   }
 }

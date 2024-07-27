@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue'
-import VChart from 'vue-echarts'
+import {ref, computed, onMounted, provide} from 'vue'
+import VChart, {THEME_KEY} from 'vue-echarts'
 import { EChartsOption } from 'echarts'
 import { use, registerMap } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -19,6 +19,7 @@ import jsonToObject from '../utils/jsonToObject.ts'
 import dataset from '../data/world_population.json'
 import worldMap from '../data/world.json'
 import RadioButton from '../components/RadioButton.vue'
+import { useThemeStore } from '../utils/store.ts'
 
 
 use([
@@ -34,6 +35,9 @@ use([
     LegendComponent,
     VisualMapComponent,
 ])
+
+const themeStore = useThemeStore()
+provide(THEME_KEY, themeStore.theme)
 
 
 class CountryOrRegion {
@@ -135,6 +139,7 @@ const mapOption = computed<EChartsOption>(() => { return {
     showDelay: 0,
     transitionDuration: 0.2
   },
+  backgroundColor: 'transparent',
   visualMap: {
     type: 'piecewise',
     bottom: 15,
@@ -236,29 +241,41 @@ const lineChartOption = computed<EChartsOption>(() => {
       left: 'center'
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      axisPointer: {
+        label: {
+          formatter: (params) => { return `${params.value}` }
+        }
+      }
     },
+    backgroundColor: 'transparent',
     grid: {
       left: 100,
       right: 32,
       top: 32,
       bottom: 24,
     },
+    color: COLOR_SERIES,
     xAxis: {
       type: 'value',
       min: 1970,
       max: 2022,
       axisLabel: {
-        formatter: '{value}'
-      }
+        formatter: (value, index) => { return `${value}` }
+      },
+      splitLine: { show: false }
     },
     yAxis: {
-      type: 'value'
+      type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false }
     },
     series: [
       {
         name: 'Population',
         type: 'line',
+        symbolSize: 6,
+        lineStyle: { width: 3 },
         data: extractCountryRegionData()
       }
     ]
@@ -308,6 +325,8 @@ function buildContinentSeries() {
       type: 'line',
       stack: 'Total',
       areaStyle: {},
+      symbolSize: 6,
+      lineStyle: { width: 3 },
       emphasis: {
         focus: 'series'
       },
@@ -328,6 +347,7 @@ const stackedChartOption = computed<EChartsOption>(() => { return {
       }
     }
   },
+  backgroundColor: 'transparent',
   legend: {
     data: continentNames
   },
@@ -418,6 +438,7 @@ const innerSunChartOption = computed<EChartsOption>(() => { return {
   tooltip: {
     trigger: 'item'
   },
+  backgroundColor: 'transparent',
   series: [
     {
       type: 'sunburst',
@@ -454,7 +475,7 @@ const innerSunChartOption = computed<EChartsOption>(() => { return {
     <div id="ChartArea">
       <div id="PopulationMap" class="chartWrapper">
         <h2>Population Visual Map</h2>
-        <p class="hint">Please select a year to see the population distribution. And select a country/region to see its population change.</p>
+        <p >Please select a year to see the population distribution. And select a country/region to see its population change.</p>
         <div class="operationPanel">
           <radio-button class="radioButton" v-for="year in YEARS" :key="year"
               :content="year.toString()" :option-value="year" v-model="selectedYear" :active-color="COLOR_SERIES[0]" />
@@ -464,6 +485,7 @@ const innerSunChartOption = computed<EChartsOption>(() => { return {
       </div>
       <div id="ContinentDistribution" class="chartWrapper">
         <h2>Continent Distribution</h2>
+        <p>The left part shows the distribution change of continents' population from 1970-2020; the right part shows the distribution in 2022.</p>
         <div class="infoPanel">
           <v-chart id="GlobalStackedChart" class="chart" :option="stackedChartOption" autoresize />
           <v-chart id="InnerSunChart" class="chart" :option="innerSunChartOption" autoresize/>
@@ -479,13 +501,16 @@ const innerSunChartOption = computed<EChartsOption>(() => { return {
   --theme-color1: #a9cf78;
   --theme-color2: #436527;
 
-  padding: 0 var(--content-margin)
+  background: var(--background-color);
+
+  .chartWrapper {
+    padding: 0 var(--content-margin);
+  }
 }
 
 #InfoArea {
-  a {
-    color: var(--theme-color2)
-  }
+  padding-left: var(--content-margin);
+  padding-right: var(--content-margin);
 }
 
 #ChartArea {

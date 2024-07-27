@@ -10,18 +10,20 @@ interface Route {
   component: any,
   meta: {
     name: string,
-    dataPage: boolean
+    dataPage: boolean,
+    themeColor: string
   }
 }
 
 
-function buildRoute(path: string, component: any, name='New Page', dataPage=false): Route {
+function buildRoute(path: string, component: any, name='New Page', dataPage=false, color: string='#000000'): Route {
   return {
     path: path,
     component: component,
     meta: {
       name: name,
-      dataPage: dataPage
+      dataPage: dataPage,
+      themeColor: color
     }
   }
 }
@@ -29,8 +31,8 @@ function buildRoute(path: string, component: any, name='New Page', dataPage=fals
 
 const routes = [
   buildRoute('/', HomePage),
-  buildRoute('/pokemon', PokemonPage, 'Pokémon', true),
-  buildRoute('/world-population', WorldPopulationPage, 'World Population', true)
+  buildRoute('/pokemon', PokemonPage, 'Pokémon', true, '#f4cc1b'),
+  buildRoute('/world-population', WorldPopulationPage, 'World Population', true, '#a9cf78')
 ]
 
 const router = createRouter({

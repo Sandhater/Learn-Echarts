@@ -30,13 +30,17 @@ body {
   --light-grey: #dddddd;
   --layer-color: #ffffff;
   --background-color: #fafafa;
+  --shadow-color: #e3e3e3;
   --text-color1: #222222;
   --text-color3: #888888;
   --content-margin: max(6%, calc(50% - 960px))
 }
 
 body.dark-mode {
-  --background-color: #1a1a1a;
+  --background-color: #23282e;
+  --light-grey: #444444;
+  --layer-color: #343c42;
+  --shadow-color: #2a2c32;
   --text-color1: #eeeeee;
 }
 
@@ -60,7 +64,8 @@ body.dark-mode {
 
   h1 {
     height: fit-content;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    font-weight: 800;
   }
 
   p {
@@ -93,8 +98,9 @@ body.dark-mode {
     height: 2.5rem;
     padding-left: 1.5rem;
     position: relative;
-    margin-bottom: 2rem;
-    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.75rem;
+    font-weight: 600;
   }
 
   h2::before {
